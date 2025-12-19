@@ -49,17 +49,20 @@ jobs:
             echo "🔄 Attempt $((retry_count + 1)) of $max_retries"
             
             # Make HTTP request with timeout and proper headers
-            response=$(curl -s -w "%{http_code}" \
+            # Use temporary file to avoid output concatenation issues
+            temp_output=$(mktemp)
+            http_code=$(curl -s -w "%{http_code}" \
               --max-time 30 \
               --connect-timeout 10 \
               --location \
               --user-agent "GitHub-Actions-KeepAlive/1.0" \
               --header "Accept: text/html,application/xhtml+xml" \
-              --output /dev/null \
+              --output "$temp_output" \
               "$url" 2>/dev/null || echo "000")
+            rm -f "$temp_output"
             
-            # Clean up any non-numeric characters from response
-            response=$(echo "$response" | grep -o '[0-9]*$' || echo "000")
+            # Ensure we only have the last 3 digits (HTTP status code)
+            response=$(echo "$http_code" | tail -c 4 | head -c 3)
             
             if [ "$response" -eq "200" ] || [ "$response" -eq "301" ] || [ "$response" -eq "302" ] || [ "$response" -eq "303" ] || [ "$response" -eq "307" ] || [ "$response" -eq "308" ]; then
               echo "✅ Success! App responded with HTTP $response (service is alive)"
