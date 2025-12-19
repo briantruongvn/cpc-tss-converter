@@ -56,10 +56,13 @@ jobs:
               --user-agent "GitHub-Actions-KeepAlive/1.0" \
               --header "Accept: text/html,application/xhtml+xml" \
               --output /dev/null \
-              "$url" || echo "000")
+              "$url" 2>/dev/null || echo "000")
             
-            if [ "$response" -eq "200" ]; then
-              echo "✅ Success! App responded with HTTP $response"
+            # Clean up any non-numeric characters from response
+            response=$(echo "$response" | grep -o '[0-9]*$' || echo "000")
+            
+            if [ "$response" -eq "200" ] || [ "$response" -eq "301" ] || [ "$response" -eq "302" ] || [ "$response" -eq "303" ] || [ "$response" -eq "307" ] || [ "$response" -eq "308" ]; then
+              echo "✅ Success! App responded with HTTP $response (service is alive)"
               return 0
             else
               echo "⚠️  Got HTTP response: $response"
