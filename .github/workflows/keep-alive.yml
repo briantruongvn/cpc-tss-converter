@@ -1,0 +1,113 @@
+name: Keep Streamlit App Alive
+
+# This workflow prevents the Streamlit app from sleeping by sending periodic HTTP requests
+# Runs every 4 hours to maintain app responsiveness while respecting Streamlit's terms of service
+
+on:
+  # Schedule to run every 4 hours
+  schedule:
+    - cron: '0 */4 * * *'  # At minute 0 past every 4th hour
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual keep-alive check'
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Keep App Alive
+      run: |
+        echo "🚀 Starting keep-alive check at $(date)"
+        
+        # App URL - will be set as GitHub secret
+        APP_URL="https://cpc-tss-converter.streamlit.app"
+        
+        # Check if custom URL is provided via secrets
+        if [ ! -z "${{ secrets.STREAMLIT_APP_URL }}" ]; then
+          APP_URL="${{ secrets.STREAMLIT_APP_URL }}"
+        fi
+        
+        echo "📍 Target URL: $APP_URL"
+        
+        # Function to make HTTP request with retries
+        ping_app() {
+          local url=$1
+          local max_retries=3
+          local retry_count=0
+          
+          while [ $retry_count -lt $max_retries ]; do
+            echo "🔄 Attempt $((retry_count + 1)) of $max_retries"
+            
+            # Make HTTP request with timeout and proper headers
+            response=$(curl -s -w "%{http_code}" \
+              --max-time 30 \
+              --connect-timeout 10 \
+              --user-agent "GitHub-Actions-KeepAlive/1.0" \
+              --header "Accept: text/html,application/xhtml+xml" \
+              --output /dev/null \
+              "$url" || echo "000")
+            
+            if [ "$response" -eq "200" ]; then
+              echo "✅ Success! App responded with HTTP $response"
+              return 0
+            else
+              echo "⚠️  Got HTTP response: $response"
+              retry_count=$((retry_count + 1))
+              
+              if [ $retry_count -lt $max_retries ]; then
+                echo "⏳ Waiting 30 seconds before retry..."
+                sleep 30
+              fi
+            fi
+          done
+          
+          echo "❌ Failed after $max_retries attempts"
+          return 1
+        }
+        
+        # Execute ping
+        if ping_app "$APP_URL"; then
+          echo "🎉 Keep-alive check completed successfully"
+          echo "status=success" >> $GITHUB_OUTPUT
+        else
+          echo "💥 Keep-alive check failed"
+          echo "status=failed" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+        echo "⏰ Keep-alive check finished at $(date)"
+      
+    - name: Log Results
+      if: always()
+      run: |
+        echo "📊 Workflow Summary:"
+        echo "- Trigger: ${{ github.event_name }}"
+        echo "- Run ID: ${{ github.run_id }}"
+        echo "- Repository: ${{ github.repository }}"
+        echo "- Workflow Status: ${{ job.status }}"
+        
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "- Manual Trigger Reason: ${{ github.event.inputs.reason }}"
+        fi
+        
+    - name: Notify on Failure
+      if: failure()
+      run: |
+        echo "🚨 ALERT: Keep-alive workflow failed!"
+        echo "This could indicate:"
+        echo "1. App deployment issues"
+        echo "2. Network connectivity problems"
+        echo "3. Streamlit service outage"
+        echo ""
+        echo "Please check the app status manually and investigate if needed."
+        echo "App should be accessible at the configured URL."

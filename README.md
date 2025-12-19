@@ -161,6 +161,26 @@ The app works with any Excel file containing data. For each sheet with content:
 - **Storage**: Temporary file storage only
 - **Security**: No data persistence, files cleaned up automatically
 
+### Keep-Alive System
+
+The repository includes a GitHub Actions workflow that prevents the Streamlit app from sleeping:
+
+- **Schedule**: Automatically pings the app every 4 hours
+- **Compliance**: Follows Streamlit's terms of service with conservative timing
+- **Monitoring**: Includes error handling and detailed logging
+- **Manual Control**: Can be triggered manually or disabled when needed
+
+#### Setup Keep-Alive
+
+1. **Deploy to Streamlit Cloud** first to get your app URL
+2. **Configure App URL** (optional):
+   - Go to repository Settings → Secrets and variables → Actions
+   - Add secret `STREAMLIT_APP_URL` with your app URL
+   - If not configured, defaults to `https://cpc-tss-converter.streamlit.app`
+3. **Monitor**: Check the "Actions" tab for workflow status
+
+For detailed instructions, see [`.github/KEEP_ALIVE.md`](.github/KEEP_ALIVE.md)
+
 ### Environment Variables
 
 No environment variables required for basic functionality.
