@@ -2,20 +2,17 @@
 """
 Step 1: Create Initial Template
 Creates structured output template for Excel format conversion.
+Uses CoreTemplateCreator for unified business logic.
 """
 
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
 import logging
 from pathlib import Path
 from typing import Union, Optional
 import argparse
 import sys
-import re
 
-from common.validation import FileValidator, validate_step1_template
-from common.exceptions import TSConverterError
-from common.config import get_config
+# Import core pipeline for unified logic
+from modules.core_pipeline import CoreTemplateCreator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,37 +20,23 @@ logger = logging.getLogger(__name__)
 
 class TemplateCreator:
     """
-    Standalone Template Creator for Step 1
+    Local Template Creator for Step 1
     
-    Creates structured output template with predefined headers:
-    - Row 1: Article name
-    - Row 2: Article number  
-    - Row 3: 17 column headers (A-Q)
+    Wrapper around CoreTemplateCreator for local file processing.
     """
     
     def __init__(self, base_dir: Optional[str] = None):
-        self.config = get_config()
-        
-        # Set up directories from config
+        # Set up base directory
         if base_dir:
             self.base_dir = Path(base_dir)
         else:
-            self.base_dir = Path(self.config.get("general.base_dir", "."))
+            self.base_dir = Path(".")
         
-        self.output_dir = self.base_dir / self.config.get("general.output_dir", "output")
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        # Set up output directory
+        output_dir = self.base_dir / "output"
         
-        # Template structure from configuration
-        self.template_headers = self.config.get("step1.template_headers", [])
-        
-        # Define styles
-        self.row1_2_style = {
-            "font": Font(bold=True, color="00000000"),
-            "fill": PatternFill(start_color="00B8E6B8", end_color="00B8E6B8", fill_type="solid"),
-            "alignment": Alignment(horizontal="left", vertical="center", wrap_text=True)
-        }
-        
-        self.header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        # Initialize core template creator
+        self.core_creator = CoreTemplateCreator(str(output_dir))
     
     def create_template(self, input_file: Union[str, Path], 
                        output_file: Optional[Union[str, Path]] = None) -> str:
@@ -70,86 +53,43 @@ class TemplateCreator:
         logger.info("📋 Step 1: Create Initial Template")
         
         # Validate input file format
-        try:
-            input_path = FileValidator.validate_file_format(input_file)
-        except TSConverterError as e:
-            logger.error(f"Input validation failed: {e}")
-            raise
+        input_path = Path(input_file)
+        if not input_path.exists():
+            raise FileNotFoundError(f"Input file not found: {input_path}")
         
-        # Auto-generate output file if not provided
-        if output_file is None:
-            base_name = input_path.stem
-            output_file = self.output_dir / f"{base_name} - Step1.xlsx"
-        else:
-            output_file = Path(output_file)
-        
-        # Validate output path is writable
-        try:
-            output_file = FileValidator.validate_output_writable(output_file)
-        except TSConverterError as e:
-            logger.error(f"Output validation failed: {e}")
-            raise
+        if input_path.suffix.lower() not in ['.xlsx', '.xls']:
+            raise ValueError(f"Invalid file format. Expected .xlsx or .xls, got {input_path.suffix}")
         
         logger.info(f"Input: {input_path}")
-        logger.info(f"Output: {output_file}")
         
-        # Create new workbook with template structure
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Output Template"
+        # For local processing, we create a template for the main file
+        # Extract filename for template creation
+        filename = input_path.name
+        sheet_name = "Template"  # Default sheet name for local processing
         
-        # Row 1: Article name with formatting
-        cell1 = ws.cell(1, 1, "Article name")
-        cell1.font = self.row1_2_style["font"]
-        cell1.fill = self.row1_2_style["fill"]
-        cell1.alignment = self.row1_2_style["alignment"]
+        # Use core creator to create template
+        template_path = self.core_creator.create_template(sheet_name, filename)
         
-        # Row 2: Article number with formatting
-        cell2 = ws.cell(2, 1, "Article number")
-        cell2.font = self.row1_2_style["font"]
-        cell2.fill = self.row1_2_style["fill"]
-        cell2.alignment = self.row1_2_style["alignment"]
+        # If custom output path specified, rename the file
+        if output_file:
+            output_path = Path(output_file)
+            if template_path:
+                Path(template_path).rename(output_path)
+                template_path = str(output_path)
+                logger.info(f"Template saved to custom path: {output_path}")
         
-        # Row 3: Headers (17 columns A-Q) with specific formatting and column widths
-        for col_idx, header_info in enumerate(self.template_headers, 1):
-            cell = ws.cell(3, col_idx, header_info["name"])
+        if template_path:
+            logger.info(f"✅ Step 1 completed: {template_path}")
             
-            # Apply font with specific color for each column
-            cell.font = Font(bold=True, color=header_info["font_color"])
-            
-            # Apply background color
-            cell.fill = PatternFill(start_color=header_info["bg_color"], 
-                                   end_color=header_info["bg_color"], 
-                                   fill_type="solid")
-            
-            # Apply alignment
-            cell.alignment = self.header_alignment
-            
-            # Set column width
-            col_letter = chr(64 + col_idx)
-            ws.column_dimensions[col_letter].width = header_info["width"]
+            # Validate template structure
+            if self.core_creator.validate_template_structure(template_path):
+                logger.info("✅ Template validation passed")
+            else:
+                logger.warning("⚠️ Template validation failed")
+        else:
+            raise RuntimeError("Failed to create template")
         
-        logger.info(f"✅ Created formatted template with {len(self.template_headers)} headers")
-        
-        # Save template
-        try:
-            wb.save(str(output_file))
-            logger.info(f"✅ Step 1 completed: {output_file}")
-            
-            # Validate created template structure
-            validate_step1_template(output_file)
-            logger.info("✅ Template validation passed")
-            
-        except Exception as e:
-            logger.error(f"Failed to save or validate file: {e}")
-            raise
-        
-        return str(output_file)
-    
-    def _extract_file_number(self, filename: str) -> str:
-        """Extract file number from filename like 'output-1-Step2.xlsx'"""
-        match = re.search(r'output-(\d+)', filename)
-        return match.group(1) if match else ""
+        return template_path
     
     def create_multiple_templates(self, input_patterns: list, output_dir: Optional[str] = None) -> list:
         """
@@ -163,8 +103,8 @@ class TemplateCreator:
             List of output file paths
         """
         if output_dir:
-            self.output_dir = Path(output_dir)
-            self.output_dir.mkdir(parents=True, exist_ok=True)
+            # Update core creator with new output directory
+            self.core_creator = CoreTemplateCreator(str(Path(output_dir)))
         
         results = []
         

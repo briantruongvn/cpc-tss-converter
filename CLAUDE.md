@@ -15,7 +15,7 @@ Create a Python web application to convert Excel files (potentially multiple she
 
 ### Core Features
 1. **Upload Interface**
-   - Allow Excel file upload (.xlsx, .xls)
+   - Allow Excel file upload (.xlsx only)
    - Display file information (name, size, number of sheets)
    - Preview sheet contents
 

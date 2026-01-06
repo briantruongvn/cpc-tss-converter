@@ -1,0 +1,83 @@
+{
+  "step2_config": {
+    "product_name_patterns": [
+      "Tên sản phẩm/Product name:",
+      "Tên sản phẩm/Product name",
+      "Product name:",
+      "Tên sản phẩm:",
+      "Product name",
+      "Tên sản phẩm"
+    ],
+    "article_number_patterns": [
+      "Mã số sản phẩm/Article number:",
+      "Mã số sản phẩm/Article number",
+      "Article number:",
+      "Mã số sản phẩm:",
+      "Article number",
+      "Mã số sản phẩm"
+    ]
+  },
+  "step3_config": {
+    "header_pattern": "CẤU THÀNH SẢN PHẨM",
+    "data_start_offset": 3,
+    "column_mapping": {
+      "A": "A",
+      "B": "B", 
+      "C": "C",
+      "D": "D",
+      "I": "E",
+      "J": "F",
+      "S": "H",
+      "N": "J",
+      "O": "K",
+      "P": "L",
+      "R": "M",
+      "Z": "N"
+    },
+    "column_combinations": {
+      "I": {
+        "source_columns": ["L", "M"],
+        "separator": "-"
+      }
+    }
+  },
+  "step4_config": {
+    "comparison_columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    "max_columns": 20,
+    "transformations": {
+      "column_a_replacements": {
+        "component": "Comp",
+        "material": "Mat",
+        "finish product": "Art"
+      },
+      "column_h_k_logic": {
+        "sd_empty_k": true
+      }
+    }
+  },
+  "general": {
+    "output_dir": "output",
+    "file_naming": {
+      "step1": "{base_name} - {sheet_name} - Step1.xlsx",
+      "step2": "{base_name} - {sheet_name} - Step2.xlsx", 
+      "step3": "{base_name} - {sheet_name} - Step3.xlsx",
+      "step4": "{base_name} - {sheet_name} - Step4.xlsx"
+    },
+    "worksheet_titles": {
+      "step1": "Template",
+      "step2": "Template", 
+      "step3": "Template",
+      "step4": "Template"
+    }
+  },
+  "layout": {
+    "header_row_range": {
+      "start": 1,
+      "end": 10
+    },
+    "validation": {
+      "article_name_row": 1,
+      "article_number_row": 2
+    }
+  }
+}

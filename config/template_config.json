@@ -1,0 +1,183 @@
+{
+  "layout": {
+    "header_row": 10,
+    "data_start_row": 11,
+    "article_info_rows": {
+      "article_name_column": "R",
+      "article_name_row": 1,
+      "article_name_merge_end": 9,
+      "article_number_start_row": 10
+    }
+  },
+  "template_structure": {
+    "row_1": {
+      "cell": "A1",
+      "value": "Article name",
+      "style": {
+        "font": {
+          "bold": true,
+          "color": "00000000"
+        },
+        "fill": {
+          "start_color": "00B8E6B8",
+          "end_color": "00B8E6B8",
+          "fill_type": "solid"
+        },
+        "alignment": {
+          "horizontal": "left",
+          "vertical": "center",
+          "wrap_text": true
+        }
+      }
+    },
+    "row_2": {
+      "cell": "A2", 
+      "value": "Article number",
+      "style": {
+        "font": {
+          "bold": true,
+          "color": "00000000"
+        },
+        "fill": {
+          "start_color": "00B8E6B8",
+          "end_color": "00B8E6B8", 
+          "fill_type": "solid"
+        },
+        "alignment": {
+          "horizontal": "left",
+          "vertical": "center",
+          "wrap_text": true
+        }
+      }
+    },
+    "headers": [
+      {
+        "name": "Combination",
+        "font_color": "00000000",
+        "bg_color": "00FFFF00",
+        "width": 15
+      },
+      {
+        "name": "General Type Component(Type)",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 25
+      },
+      {
+        "name": "Sub-Type Component Identity Process Name",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 35
+      },
+      {
+        "name": "Material Designation",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 20
+      },
+      {
+        "name": "Material Distributor",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 20
+      },
+      {
+        "name": "Producer",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 15
+      },
+      {
+        "name": "Material Type In Process",
+        "font_color": "00FFFFFF",
+        "bg_color": "00FF0000",
+        "width": 22
+      },
+      {
+        "name": "Document type",
+        "font_color": "00FFFFFF",
+        "bg_color": "000000FF",
+        "width": 15
+      },
+      {
+        "name": "Requirement Source/TED",
+        "font_color": "00FFFFFF",
+        "bg_color": "000000FF",
+        "width": 22
+      },
+      {
+        "name": "Sub-type",
+        "font_color": "00FFFFFF",
+        "bg_color": "000000FF",
+        "width": 12
+      },
+      {
+        "name": "Regulation or substances",
+        "font_color": "00FFFFFF",
+        "bg_color": "000000FF",
+        "width": 22
+      },
+      {
+        "name": "Limit",
+        "font_color": "00000000",
+        "bg_color": "00B8E6B8",
+        "width": 12
+      },
+      {
+        "name": "Test method",
+        "font_color": "00000000",
+        "bg_color": "00B8E6B8",
+        "width": 15
+      },
+      {
+        "name": "Frequency",
+        "font_color": "00000000",
+        "bg_color": "00B8E6B8",
+        "width": 12
+      },
+      {
+        "name": "Level",
+        "font_color": "00FFFFFF",
+        "bg_color": "000000FF",
+        "width": 10
+      },
+      {
+        "name": "Warning Limit",
+        "font_color": "00000000",
+        "bg_color": "00B8E6B8",
+        "width": 15
+      },
+      {
+        "name": "Additional Information",
+        "font_color": "00000000",
+        "bg_color": "00B8E6B8",
+        "width": 25
+      }
+    ]
+  },
+  "article_info_style": {
+    "fill": {
+      "start_color": "00FFD4B3",
+      "end_color": "00FFD4B3",
+      "fill_type": "solid"
+    },
+    "font": {
+      "bold": true,
+      "color": "00000000"
+    },
+    "alignment": {
+      "horizontal": "center",
+      "vertical": "center"
+    },
+    "article_name_alignment": {
+      "text_rotation": 90,
+      "horizontal": "center",
+      "vertical": "center"
+    }
+  },
+  "header_alignment": {
+    "horizontal": "center",
+    "vertical": "center", 
+    "wrap_text": true
+  }
+}
