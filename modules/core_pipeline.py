@@ -239,16 +239,16 @@ class CoreStep2Processor:
         self.product_name_patterns = step2_config["product_name_patterns"]
         self.article_number_patterns = step2_config["article_number_patterns"]
     
-    def extract_article_info_from_uploaded_file(self, uploaded_file: UploadedFile, sheet_name: str) -> Tuple[Optional[str], Optional[str]]:
+    def extract_article_info_from_uploaded_file(self, uploaded_file: UploadedFile, sheet_name: str) -> Tuple[List[str], List[str]]:
         """
-        Extract article name and number from uploaded Streamlit file
+        Extract article names and numbers from uploaded Streamlit file (supports multiple values)
         
         Args:
             uploaded_file: Streamlit uploaded file object
             sheet_name: Name of the sheet to search in
             
         Returns:
-            Tuple of (article_name, article_number)
+            Tuple of (article_names_list, article_numbers_list)
         """
         try:
             # Read the specific sheet
@@ -259,18 +259,18 @@ class CoreStep2Processor:
             
         except Exception as e:
             logging.error(f"Error extracting article info from sheet '{sheet_name}': {str(e)}")
-            return None, None
+            return [], []
     
-    def extract_article_info_from_file(self, file_path: str, sheet_name: str) -> Tuple[Optional[str], Optional[str]]:
+    def extract_article_info_from_file(self, file_path: str, sheet_name: str) -> Tuple[List[str], List[str]]:
         """
-        Extract article name and number from local file
+        Extract article names and numbers from local file (supports multiple values)
         
         Args:
             file_path: Path to the Excel file
             sheet_name: Name of the sheet to search in
             
         Returns:
-            Tuple of (article_name, article_number)
+            Tuple of (article_names_list, article_numbers_list)
         """
         try:
             # Read the specific sheet
@@ -281,10 +281,10 @@ class CoreStep2Processor:
             
         except Exception as e:
             logging.error(f"Error extracting article info from sheet '{sheet_name}': {str(e)}")
-            return None, None
+            return [], []
     
-    def _search_article_info_in_dataframe(self, df: pd.DataFrame) -> Tuple[Optional[str], Optional[str]]:
-        """Search for article information in a pandas DataFrame"""
+    def _search_article_info_in_dataframe(self, df: pd.DataFrame) -> Tuple[List[str], List[str]]:
+        """Search for article information in a pandas DataFrame and return arrays"""
         article_name = None
         article_number = None
         
@@ -335,7 +335,22 @@ class CoreStep2Processor:
             if article_name and article_number:
                 break
         
-        return article_name, article_number
+        # Split multiple values by newlines and semicolons
+        import re
+        
+        article_names = []
+        if article_name:
+            # Split by newlines and semicolons
+            names = re.split(r'[\n;]+', article_name.strip())
+            article_names = [name.strip() for name in names if name.strip()]
+        
+        article_numbers = []
+        if article_number:
+            # Split by commas, newlines and semicolons
+            numbers = re.split(r'[,\n;]+', article_number.strip())
+            article_numbers = [num.strip() for num in numbers if num.strip()]
+        
+        return article_names, article_numbers
     
     def _extract_value_after_pattern(self, text: str, pattern: str) -> Optional[str]:
         """Extract value that comes after a pattern in text"""
@@ -357,14 +372,14 @@ class CoreStep2Processor:
         except Exception:
             return None
     
-    def populate_template_with_article_info(self, template_path: str, article_name: Optional[str], article_number: Optional[str]) -> str:
+    def populate_template_with_article_info(self, template_path: str, article_names: List[str], article_numbers: List[str]) -> str:
         """
-        Populate Step 1 template with extracted article information
+        Populate Step 1 template with extracted article information (supports multiple values)
         
         Args:
             template_path: Path to the Step 1 template file
-            article_name: Article name to populate
-            article_number: Article number to populate
+            article_names: List of article names to populate in consecutive columns
+            article_numbers: List of article numbers to populate in consecutive columns
             
         Returns:
             Path to the created Step 2 file
@@ -382,61 +397,62 @@ class CoreStep2Processor:
             layout_config = template_config["layout"]["article_info_rows"]
             article_style = template_config["article_info_style"]
             
-            # Convert column letter to number (R = 18)
-            article_column = openpyxl.utils.column_index_from_string(layout_config["article_name_column"])
-            
-            # Populate article information using new layout configuration
-            if article_name:
+            # Populate multiple article names in consecutive columns (R, S, T, ...)
+            if article_names:
                 article_name_row = layout_config["article_name_row"]
                 article_name_merge_end = layout_config["article_name_merge_end"]
+                start_column_letter = layout_config["article_name_start_column"]
+                start_column_index = openpyxl.utils.column_index_from_string(start_column_letter)
                 
-                # Merge cells R1:R9 for article name
-                merge_range = f"{layout_config['article_name_column']}{article_name_row}:{layout_config['article_name_column']}{article_name_merge_end}"
-                ws.merge_cells(merge_range)
-                
-                # Set article name in merged cell
-                cell = ws.cell(article_name_row, article_column, article_name)
-                
-                # Debug logging
-                logging.info(f"🔄 Applying rotation {article_style['article_name_alignment']['text_rotation']}° to article name cell R{article_name_row}")
-                
-                # Apply article name styling (with rotation)
-                
-                cell.fill = PatternFill(
-                    start_color=article_style["fill"]["start_color"][2:],  # Remove '00' prefix
-                    end_color=article_style["fill"]["end_color"][2:],
-                    fill_type=article_style["fill"]["fill_type"]
-                )
-                cell.font = Font(
-                    bold=article_style["font"]["bold"],
-                    color=article_style["font"]["color"][2:]  # Remove '00' prefix
-                )
-                cell.alignment = Alignment(
-                    text_rotation=article_style["article_name_alignment"]["text_rotation"],
-                    horizontal=article_style["article_name_alignment"]["horizontal"],
-                    vertical=article_style["article_name_alignment"]["vertical"]
-                )
+                for i, article_name in enumerate(article_names):
+                    # Calculate current column (R=18, S=19, T=20, ...)
+                    current_column_index = start_column_index + i
+                    current_column_letter = openpyxl.utils.get_column_letter(current_column_index)
+                    
+                    # Merge cells for current article name (e.g., R1:R9, S1:S9, T1:T9)
+                    merge_range = f"{current_column_letter}{article_name_row}:{current_column_letter}{article_name_merge_end}"
+                    ws.merge_cells(merge_range)
+                    
+                    # Set article name in merged cell
+                    cell = ws.cell(article_name_row, current_column_index, article_name)
+                    
+                    # Debug logging
+                    logging.info(f"🔄 Placing article name '{article_name}' in {current_column_letter}{article_name_row} with rotation {article_style['article_name_alignment']['text_rotation']}°")
+                    
+                    # Apply article name styling (with rotation)
+                    cell.fill = PatternFill(
+                        start_color=article_style["fill"]["start_color"][2:],  # Remove '00' prefix
+                        end_color=article_style["fill"]["end_color"][2:],
+                        fill_type=article_style["fill"]["fill_type"]
+                    )
+                    cell.font = Font(
+                        bold=article_style["font"]["bold"],
+                        color=article_style["font"]["color"][2:]  # Remove '00' prefix
+                    )
+                    cell.alignment = Alignment(
+                        text_rotation=article_style["article_name_alignment"]["text_rotation"],
+                        horizontal=article_style["article_name_alignment"]["horizontal"],
+                        vertical=article_style["article_name_alignment"]["vertical"]
+                    )
             
-            if article_number:
+            # Populate multiple article numbers in consecutive columns (R10, S10, T10, ...)
+            if article_numbers:
                 article_number_start_row = layout_config["article_number_start_row"]
+                start_column_letter = layout_config["article_number_start_column"]
+                start_column_index = openpyxl.utils.column_index_from_string(start_column_letter)
                 
-                # Handle multiple article numbers (split by common separators)
-                article_numbers = []
-                if isinstance(article_number, str):
-                    # Split by common separators: comma, semicolon, newline
-                    import re
-                    article_numbers = re.split(r'[,;\n]+', article_number.strip())
-                    article_numbers = [num.strip() for num in article_numbers if num.strip()]
-                else:
-                    article_numbers = [str(article_number)]
-                
-                # Place each article number in consecutive rows starting from R10
-                for i, num in enumerate(article_numbers):
-                    current_row = article_number_start_row + i
-                    cell = ws.cell(current_row, article_column, num)
+                for i, article_number in enumerate(article_numbers):
+                    # Calculate current column (R=18, S=19, T=20, ...)
+                    current_column_index = start_column_index + i
+                    current_column_letter = openpyxl.utils.get_column_letter(current_column_index)
+                    
+                    # Set article number in current column at start row
+                    cell = ws.cell(article_number_start_row, current_column_index, article_number)
+                    
+                    # Debug logging
+                    logging.info(f"🔄 Placing article number '{article_number}' in {current_column_letter}{article_number_start_row}")
                     
                     # Apply article number styling (no rotation)
-                    
                     cell.fill = PatternFill(
                         start_color=article_style["fill"]["start_color"][2:],
                         end_color=article_style["fill"]["end_color"][2:],
@@ -865,7 +881,7 @@ class CoreStep4DuplicateRemover:
             header_row = layout_config["header_row"]
             
             # Get article column for debugging
-            article_column = openpyxl.utils.column_index_from_string(layout_config["article_info_rows"]["article_name_column"])
+            article_column = openpyxl.utils.column_index_from_string(layout_config["article_info_rows"]["article_name_start_column"])
             
             # Copy header rows (1 to header_row) from source INCLUDING MERGED CELLS
             # First, copy all merged cell ranges from source to destination

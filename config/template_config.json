@@ -3,9 +3,10 @@
     "header_row": 10,
     "data_start_row": 11,
     "article_info_rows": {
-      "article_name_column": "R",
+      "article_name_start_column": "R",
       "article_name_row": 1,
       "article_name_merge_end": 9,
+      "article_number_start_column": "R",
       "article_number_start_row": 10
     }
   },

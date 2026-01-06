@@ -29,11 +29,23 @@ def main():
     
     # Find input Excel file
     input_files = list(input_dir.glob("*.xlsx"))
+    # Filter out temporary Excel files
+    input_files = [f for f in input_files if not f.name.startswith("~$")]
+    
     if not input_files:
         logger.error("❌ No Excel files found in input directory")
         sys.exit(1)
     
-    input_file = input_files[0]
+    # Use the first file that starts with "CPC" (CPC TSS STORTOMMA...)
+    input_file = None
+    for f in input_files:
+        if f.name.startswith("CPC"):
+            input_file = f
+            break
+    
+    # If no CPC file found, use the first file
+    if not input_file:
+        input_file = input_files[0]
     logger.info(f"📁 Input file: {input_file.name}")
     
     # Initialize pipeline
