@@ -472,10 +472,65 @@ class CoreStep2Processor:
             logging.info(f"Created Step 2 file: {step2_path}")
             
             return step2_path
-            
+        
         except Exception as e:
             logging.error(f"Error populating template: {str(e)}")
             raise
+    
+    def _add_checkbox_markings(self, worksheet, article_names: List[str], article_numbers: List[str], layout_config: dict):
+        """
+        Add X marks in data rows for columns that contain article names/numbers
+        
+        Args:
+            worksheet: The worksheet to add markings to
+            article_names: List of article names (determines which columns need X marks)
+            article_numbers: List of article numbers (determines which columns need X marks)
+            layout_config: Template layout configuration
+        """
+        try:
+            # Get data start row and article column info
+            data_start_row = layout_config.get("data_start_row", 11)  # Row 11 (default)
+            start_column_letter = layout_config["article_info_rows"]["article_name_start_column"]  # "R"
+            start_column_index = openpyxl.utils.column_index_from_string(start_column_letter)  # R = 18
+            
+            # Determine how many article columns we have (based on max article names or numbers)
+            num_article_columns = max(len(article_names), len(article_numbers))
+            
+            if num_article_columns == 0:
+                logging.info("⚠️ No article info found, skipping checkbox markings")
+                return
+            
+            logging.info(f"✅ Adding X marks to {num_article_columns} article column(s) starting from row {data_start_row}")
+            
+            # Add X marks to each data row for each article column
+            markings_added = 0
+            
+            for row_num in range(data_start_row, worksheet.max_row + 1):
+                # Check if this row has any data (not completely empty)
+                row_has_data = False
+                for col in range(1, 15):  # Check columns A-N for any data
+                    cell = worksheet.cell(row_num, col)
+                    if cell.value and str(cell.value).strip():
+                        row_has_data = True
+                        break
+                
+                if not row_has_data:
+                    continue  # Skip empty rows
+                
+                # Add X marks to article columns for this data row
+                for i in range(num_article_columns):
+                    current_column_index = start_column_index + i
+                    current_column_letter = openpyxl.utils.get_column_letter(current_column_index)
+                    
+                    # Set X mark in the cell
+                    cell = worksheet.cell(row_num, current_column_index, "X")
+                    markings_added += 1
+            
+            logging.info(f"✅ Added {markings_added} X marks to article columns")
+            
+        except Exception as e:
+            logging.error(f"Error adding checkbox markings: {str(e)}")
+            # Don't raise exception, just log and continue
     
     def _get_step2_filename(self, step1_path: str) -> str:
         """Generate Step 2 filename from Step 1 path"""
@@ -557,6 +612,9 @@ class CoreStep3DataTransfer:
                     print(f"   - Header pattern not found")
                 if not data_rows:
                     print(f"   - No data rows extracted")
+            
+            # Add X marks in data rows for article columns
+            self._add_checkbox_markings_step3(ws)
             
             # Save as Step 3 file
             wb.save(step3_path)
@@ -749,6 +807,70 @@ class CoreStep3DataTransfer:
                     continue
         
         print(f"📋 DEBUG: Combination summary: {combination_writes} combinations applied")
+    
+    def _add_checkbox_markings_step3(self, worksheet):
+        """
+        Add X marks in data rows for article columns in Step 3
+        Automatically detects article columns from Step 2 file structure
+        """
+        try:
+            # Get configuration
+            template_config = ConfigManager.get_template_config()
+            layout_config = template_config["layout"]
+            data_start_row = layout_config.get("data_start_row", 11)  # Row 11
+            start_column_letter = layout_config["article_info_rows"]["article_name_start_column"]  # "R"
+            start_column_index = openpyxl.utils.column_index_from_string(start_column_letter)  # R = 18
+            
+            # Detect article columns by checking which columns (R, S, T, ...) have content in rows 1-10
+            article_columns = []
+            
+            # Check columns R, S, T, U, V, W, X, Y, Z for article content
+            for col_offset in range(10):  # Check up to 10 columns (R through Z+)
+                current_column_index = start_column_index + col_offset
+                current_column_letter = openpyxl.utils.get_column_letter(current_column_index)
+                
+                # Check if this column has article info in rows 1-10
+                has_article_info = False
+                for row_num in range(1, 11):  # Check rows 1-10
+                    cell = worksheet.cell(row_num, current_column_index)
+                    if cell.value and str(cell.value).strip():
+                        has_article_info = True
+                        break
+                
+                if has_article_info:
+                    article_columns.append(current_column_index)
+            
+            if not article_columns:
+                logging.info("⚠️ No article columns detected, skipping checkbox markings")
+                return
+            
+            logging.info(f"✅ Detected {len(article_columns)} article column(s) for X markings")
+            
+            # Add X marks to each data row for each detected article column
+            markings_added = 0
+            
+            for row_num in range(data_start_row, worksheet.max_row + 1):
+                # Check if this row has any data (not completely empty)
+                row_has_data = False
+                for col in range(1, 15):  # Check columns A-N for any data
+                    cell = worksheet.cell(row_num, col)
+                    if cell.value and str(cell.value).strip():
+                        row_has_data = True
+                        break
+                
+                if not row_has_data:
+                    continue  # Skip empty rows
+                
+                # Add X marks to detected article columns for this data row
+                for column_index in article_columns:
+                    cell = worksheet.cell(row_num, column_index, "X")
+                    markings_added += 1
+            
+            logging.info(f"✅ Added {markings_added} X marks to {len(article_columns)} article column(s)")
+            
+        except Exception as e:
+            logging.error(f"Error adding checkbox markings in Step 3: {str(e)}")
+            # Don't raise exception, just log and continue
     
     def _get_step3_filename(self, step2_path: str) -> str:
         """Generate Step 3 filename from Step 2 path"""
