@@ -210,28 +210,32 @@ def get_custom_css() -> str:
         color: #991b1b;
     }
     
-    /* Download section */
+    /* Download section - centered and consistent width with reduced height */
     .download-section {
         background-color: #f0f9f4;
-        padding: 1.25rem;
+        padding: 0.75rem 1rem;
         border-radius: 6px;
-        margin-top: 1rem;
+        margin: 0.75rem auto;
         text-align: center;
         border: 1px solid #d1fae5;
+        width: 70%;
+        max-width: 800px;
+        min-width: 350px;
+        box-sizing: border-box;
     }
     
     .download-section h3 {
         color: #065f46;
         font-weight: 500;
-        font-size: 1rem;
-        margin-bottom: 0.25rem;
+        font-size: 0.875rem;
+        margin: 0 0 0.25rem 0;
     }
     
     .download-section p {
         color: #047857;
         font-weight: 400;
         font-size: 0.875rem;
-        margin-top: 0;
+        margin: 0;
     }
     
     /* Info boxes - match upload box width */
@@ -809,6 +813,40 @@ def get_custom_css() -> str:
         visibility: hidden !important;
         height: 0 !important;
         overflow: hidden !important;
+    }
+    
+    /* Center download button within download section */
+    .download-section .stDownloadButton {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 1rem auto !important;
+        text-align: center !important;
+    }
+    
+    .download-section .stDownloadButton > div {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+    
+    .download-section .stDownloadButton button {
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    
+    /* Ensure all elements in download section are centered */
+    .download-section > div {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
     }
 </style>
 """

@@ -173,7 +173,8 @@
     "article_name_alignment": {
       "text_rotation": 90,
       "horizontal": "center",
-      "vertical": "center"
+      "vertical": "center",
+      "wrap_text": true
     }
   },
   "header_alignment": {

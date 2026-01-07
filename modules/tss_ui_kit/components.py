@@ -279,7 +279,6 @@ class TSSUIKit:
 
     def render_download_section(self, file_path: Optional[Union[str, Path]] = None,
                                original_filename: Optional[str] = None,
-                               processing_stats: Optional[Dict[str, Any]] = None,
                                custom_filename: Optional[str] = None):
         """
         Render download section for output files
@@ -287,7 +286,6 @@ class TSSUIKit:
         Args:
             file_path: Path to output file
             original_filename: Original uploaded filename for naming
-            processing_stats: Statistics to display
             custom_filename: Custom download filename
         """
         # Convert to Path object if needed
@@ -316,46 +314,46 @@ class TSSUIKit:
                 elif str(file_path).lower().endswith('.csv'):
                     mime_type = "text/csv"
                 
-                st.download_button(
-                    label="📥 Download Processed File",
-                    data=file_data,
-                    file_name=download_filename,
-                    mime=mime_type,
-                    help="Click to download the processed file"
-                )
+                # Create centered HTML download button
+                import base64
+                b64 = base64.b64encode(file_data).decode()
                 
-                # Show processing statistics
-                if processing_stats:
-                    self.render_processing_stats(processing_stats)
+                st.markdown(f"""
+                    <div style="display: flex; justify-content: center; align-items: center; margin: 1rem 0;">
+                        <a href="data:{mime_type};base64,{b64}" 
+                           download="{download_filename}"
+                           style="
+                               display: inline-flex;
+                               align-items: center;
+                               justify-content: center;
+                               padding: 0.5rem 1rem;
+                               background-color: #2563eb !important;
+                               color: #ffffff !important;
+                               text-decoration: none;
+                               border-radius: 6px;
+                               font-size: 0.875rem;
+                               font-weight: 500;
+                               font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+                               transition: all 0.15s ease;
+                               border: 1px solid #2563eb !important;
+                               cursor: pointer;
+                               gap: 0.5rem;
+                               box-shadow: none;
+                           "
+                           onmouseover="this.style.backgroundColor='#1d4ed8'; this.style.borderColor='#1d4ed8'"
+                           onmouseout="this.style.backgroundColor='#2563eb'; this.style.borderColor='#2563eb'"
+                           title="Click to download the processed file">
+                            📥 Download Processed File
+                        </a>
+                    </div>
+                """, unsafe_allow_html=True)
+                
                     
             except Exception as e:
                 self.render_error_message(f"Error preparing download: {str(e)}")
         else:
             self.render_warning_message("Output file is not ready for download yet.")
 
-    def render_processing_stats(self, stats: Dict[str, Any]):
-        """Render processing statistics in expandable section"""
-        with st.expander("📊 Processing Statistics"):
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("Initial rows", stats.get("initial_rows", 0))
-            
-            with col2:
-                removed = stats.get("removed_rows", 0)
-                removal_pct = stats.get("removal_percentage", 0)
-                st.metric("Rows removed", removed, delta=f"-{removal_pct:.1f}%")
-            
-            with col3:
-                st.metric("Final rows", stats.get("final_rows", 0))
-            
-            # Additional details
-            if stats.get("processing_time"):
-                st.write(f"⏱️ Processing time: {stats['processing_time']:.1f} seconds")
-            
-            for key, value in stats.items():
-                if key not in ["initial_rows", "removed_rows", "final_rows", "removal_percentage", "processing_time"]:
-                    st.write(f"• {key}: {value}")
 
     def render_info_message(self, message: str):
         """Render info message box"""

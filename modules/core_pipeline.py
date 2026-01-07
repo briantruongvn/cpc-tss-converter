@@ -432,7 +432,8 @@ class CoreStep2Processor:
                     cell.alignment = Alignment(
                         text_rotation=article_style["article_name_alignment"]["text_rotation"],
                         horizontal=article_style["article_name_alignment"]["horizontal"],
-                        vertical=article_style["article_name_alignment"]["vertical"]
+                        vertical=article_style["article_name_alignment"]["vertical"],
+                        wrap_text=article_style["article_name_alignment"].get("wrap_text", False)
                     )
             
             # Populate multiple article numbers in consecutive columns (R10, S10, T10, ...)
