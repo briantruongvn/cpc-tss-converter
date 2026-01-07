@@ -323,25 +323,25 @@ class TSSUIKit:
                         <a href="data:{mime_type};base64,{b64}" 
                            download="{download_filename}"
                            style="
-                               display: inline-flex;
-                               align-items: center;
-                               justify-content: center;
-                               padding: 0.5rem 1rem;
+                               display: inline-flex !important;
+                               align-items: center !important;
+                               justify-content: center !important;
+                               padding: 0.5rem 1rem !important;
                                background-color: #2563eb !important;
                                color: #ffffff !important;
-                               text-decoration: none;
-                               border-radius: 6px;
-                               font-size: 0.875rem;
-                               font-weight: 500;
-                               font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-                               transition: all 0.15s ease;
+                               text-decoration: none !important;
+                               border-radius: 6px !important;
+                               font-size: 0.875rem !important;
+                               font-weight: 500 !important;
+                               font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+                               transition: all 0.15s ease !important;
                                border: 1px solid #2563eb !important;
-                               cursor: pointer;
-                               gap: 0.5rem;
-                               box-shadow: none;
+                               cursor: pointer !important;
+                               gap: 0.5rem !important;
+                               box-shadow: none !important;
                            "
-                           onmouseover="this.style.backgroundColor='#1d4ed8'; this.style.borderColor='#1d4ed8'"
-                           onmouseout="this.style.backgroundColor='#2563eb'; this.style.borderColor='#2563eb'"
+                           onmouseover="this.style.setProperty('background-color', '#1d4ed8', 'important'); this.style.setProperty('border-color', '#1d4ed8', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
+                           onmouseout="this.style.setProperty('background-color', '#2563eb', 'important'); this.style.setProperty('border-color', '#2563eb', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
                            title="Click to download the processed file">
                             📥 Download Processed File
                         </a>
