@@ -815,6 +815,63 @@ def get_custom_css() -> str:
         overflow: hidden !important;
     }
     
+    /* Enhanced download button styling with blue background and white text */
+    .stDownloadButton {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 1rem auto !important;
+        text-align: center !important;
+    }
+    
+    .stDownloadButton > div {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Force blue background and white text for download buttons */
+    .stDownloadButton button {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #2563eb !important;
+        border-radius: 6px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 0.5rem !important;
+        transition: all 0.15s ease !important;
+    }
+    
+    .stDownloadButton button:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
+    }
+    
+    .stDownloadButton button:focus {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    /* Ensure all download button content has white text */
+    .stDownloadButton button *,
+    .stDownloadButton button span,
+    .stDownloadButton button p {
+        color: #ffffff !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+    
     /* Center download button within download section */
     .download-section .stDownloadButton {
         display: flex !important;

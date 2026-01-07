@@ -314,43 +314,23 @@ class TSSUIKit:
                 elif str(file_path).lower().endswith('.csv'):
                     mime_type = "text/csv"
                 
-                # Create centered HTML download button
-                import base64
-                b64 = base64.b64encode(file_data).decode()
-                
-                st.markdown(f"""
+                # Create centered download button using Streamlit native functionality
+                st.markdown("""
                     <div style="display: flex; justify-content: center; align-items: center; margin: 1rem 0;">
-                        <button onclick="downloadFile()" 
-                                style="
-                                    display: inline-flex !important;
-                                    align-items: center !important;
-                                    justify-content: center !important;
-                                    padding: 0.5rem 1rem !important;
-                                    background-color: #2563eb !important;
-                                    color: #ffffff !important;
-                                    border: 1px solid #2563eb !important;
-                                    border-radius: 6px !important;
-                                    font-size: 0.875rem !important;
-                                    font-weight: 500 !important;
-                                    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
-                                    cursor: pointer !important;
-                                    gap: 0.5rem !important;
-                                    transition: all 0.15s ease !important;
-                                "
-                                onmouseover="this.style.setProperty('background-color', '#1d4ed8', 'important'); this.style.setProperty('border-color', '#1d4ed8', 'important');"
-                                onmouseout="this.style.setProperty('background-color', '#2563eb', 'important'); this.style.setProperty('border-color', '#2563eb', 'important');"
-                                title="Click to download the processed file">
-                            📥 Download Processed File
-                        </button>
+                """, unsafe_allow_html=True)
+                
+                st.download_button(
+                    label="📥 Download Processed File",
+                    data=file_data,
+                    file_name=download_filename,
+                    mime=mime_type,
+                    key=f"download_{download_filename}",
+                    use_container_width=False,
+                    type="primary"
+                )
+                
+                st.markdown("""
                     </div>
-                    <script>
-                    function downloadFile() {{
-                        const link = document.createElement('a');
-                        link.href = 'data:{mime_type};base64,{b64}';
-                        link.download = '{download_filename}';
-                        link.click();
-                    }}
-                    </script>
                 """, unsafe_allow_html=True)
                 
                     
