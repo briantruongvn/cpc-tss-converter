@@ -72,6 +72,13 @@ def load_custom_css():
         .stDeployButton {display: none;}
         header {visibility: hidden;}
         
+        /* Hide footer completely */
+        footer, .stApp > footer, [data-testid="stFooter"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+        }
+        
         /* App title section */
         .app-header {
             text-align: center;

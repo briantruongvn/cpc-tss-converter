@@ -783,6 +783,33 @@ def get_custom_css() -> str:
         display: none !important;
         visibility: hidden !important;
     }
+    
+    /* Hide Streamlit footer "Made with Streamlit" */
+    footer,
+    .stApp > footer,
+    [data-testid="stFooter"],
+    footer[data-testid="stFooter"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Hide any footer elements */
+    .css-1d391kg footer,
+    .main footer,
+    footer.stFooter {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Force hide footer with more specific selectors */
+    div[data-testid="stFooter"],
+    .stApp footer,
+    .stMarkdown footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
 </style>
 """
 
