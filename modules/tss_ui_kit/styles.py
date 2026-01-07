@@ -784,53 +784,31 @@ def get_custom_css() -> str:
         visibility: hidden !important;
     }
     
-    /* Nuclear option - Hide ALL footer elements with maximum specificity */
+    /* Hide Streamlit footer "Made with Streamlit" */
     footer,
     .stApp > footer,
     [data-testid="stFooter"],
-    footer[data-testid="stFooter"],
-    div[data-testid="stFooter"],
-    .stApp footer,
-    .stMarkdown footer,
+    footer[data-testid="stFooter"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Hide any footer elements */
     .css-1d391kg footer,
     .main footer,
-    footer.stFooter,
-    .stApp > div > footer,
-    .block-container ~ footer,
-    .main > footer,
-    .element-container footer,
-    [class*="footer"],
-    [class*="Footer"],
-    footer[class*="st"],
-    div[class*="footer"],
-    div[class*="Footer"] {
+    footer.stFooter {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Force hide footer with more specific selectors */
+    div[data-testid="stFooter"],
+    .stApp footer,
+    .stMarkdown footer {
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
-        width: 0 !important;
         overflow: hidden !important;
-        position: absolute !important;
-        left: -9999px !important;
-        top: -9999px !important;
-        opacity: 0 !important;
-        z-index: -9999 !important;
-    }
-    
-    /* Target specific footer text content */
-    *:contains("Made with"),
-    *:contains("Streamlit"),
-    [aria-label*="Made with"],
-    [title*="Made with"],
-    [alt*="Made with"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
-    /* Force hide bottom area where footer appears */
-    .stApp > div:last-child,
-    .main + div,
-    .block-container + div {
-        display: none !important;
     }
 </style>
 """

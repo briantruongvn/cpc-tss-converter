@@ -279,6 +279,7 @@ class TSSUIKit:
 
     def render_download_section(self, file_path: Optional[Union[str, Path]] = None,
                                original_filename: Optional[str] = None,
+                               processing_stats: Optional[Dict[str, Any]] = None,
                                custom_filename: Optional[str] = None):
         """
         Render download section for output files
@@ -286,6 +287,7 @@ class TSSUIKit:
         Args:
             file_path: Path to output file
             original_filename: Original uploaded filename for naming
+            processing_stats: Statistics to display
             custom_filename: Custom download filename
         """
         # Convert to Path object if needed
@@ -321,12 +323,39 @@ class TSSUIKit:
                     mime=mime_type,
                     help="Click to download the processed file"
                 )
+                
+                # Show processing statistics
+                if processing_stats:
+                    self.render_processing_stats(processing_stats)
                     
             except Exception as e:
                 self.render_error_message(f"Error preparing download: {str(e)}")
         else:
             self.render_warning_message("Output file is not ready for download yet.")
 
+    def render_processing_stats(self, stats: Dict[str, Any]):
+        """Render processing statistics in expandable section"""
+        with st.expander("📊 Processing Statistics"):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Initial rows", stats.get("initial_rows", 0))
+            
+            with col2:
+                removed = stats.get("removed_rows", 0)
+                removal_pct = stats.get("removal_percentage", 0)
+                st.metric("Rows removed", removed, delta=f"-{removal_pct:.1f}%")
+            
+            with col3:
+                st.metric("Final rows", stats.get("final_rows", 0))
+            
+            # Additional details
+            if stats.get("processing_time"):
+                st.write(f"⏱️ Processing time: {stats['processing_time']:.1f} seconds")
+            
+            for key, value in stats.items():
+                if key not in ["initial_rows", "removed_rows", "final_rows", "removal_percentage", "processing_time"]:
+                    st.write(f"• {key}: {value}")
 
     def render_info_message(self, message: str):
         """Render info message box"""
