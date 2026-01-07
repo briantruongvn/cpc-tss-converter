@@ -320,32 +320,37 @@ class TSSUIKit:
                 
                 st.markdown(f"""
                     <div style="display: flex; justify-content: center; align-items: center; margin: 1rem 0;">
-                        <a href="data:{mime_type};base64,{b64}" 
-                           download="{download_filename}"
-                           style="
-                               display: inline-flex !important;
-                               align-items: center !important;
-                               justify-content: center !important;
-                               padding: 0.5rem 1rem !important;
-                               background-color: #2563eb !important;
-                               color: #ffffff !important;
-                               text-decoration: none !important;
-                               border-radius: 6px !important;
-                               font-size: 0.875rem !important;
-                               font-weight: 500 !important;
-                               font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
-                               transition: all 0.15s ease !important;
-                               border: 1px solid #2563eb !important;
-                               cursor: pointer !important;
-                               gap: 0.5rem !important;
-                               box-shadow: none !important;
-                           "
-                           onmouseover="this.style.setProperty('background-color', '#1d4ed8', 'important'); this.style.setProperty('border-color', '#1d4ed8', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
-                           onmouseout="this.style.setProperty('background-color', '#2563eb', 'important'); this.style.setProperty('border-color', '#2563eb', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
-                           title="Click to download the processed file">
+                        <button onclick="downloadFile()" 
+                                style="
+                                    display: inline-flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
+                                    padding: 0.5rem 1rem !important;
+                                    background-color: #2563eb !important;
+                                    color: #ffffff !important;
+                                    border: 1px solid #2563eb !important;
+                                    border-radius: 6px !important;
+                                    font-size: 0.875rem !important;
+                                    font-weight: 500 !important;
+                                    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+                                    cursor: pointer !important;
+                                    gap: 0.5rem !important;
+                                    transition: all 0.15s ease !important;
+                                "
+                                onmouseover="this.style.setProperty('background-color', '#1d4ed8', 'important'); this.style.setProperty('border-color', '#1d4ed8', 'important');"
+                                onmouseout="this.style.setProperty('background-color', '#2563eb', 'important'); this.style.setProperty('border-color', '#2563eb', 'important');"
+                                title="Click to download the processed file">
                             📥 Download Processed File
-                        </a>
+                        </button>
                     </div>
+                    <script>
+                    function downloadFile() {{
+                        const link = document.createElement('a');
+                        link.href = 'data:{mime_type};base64,{b64}';
+                        link.download = '{download_filename}';
+                        link.click();
+                    }}
+                    </script>
                 """, unsafe_allow_html=True)
                 
                     
