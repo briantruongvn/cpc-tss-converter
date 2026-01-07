@@ -1,12 +1,6 @@
 import streamlit as st
-import pandas as pd
-import io
-import zipfile
 from pathlib import Path
-import tempfile
-import os
-from typing import List, Dict, Any
-import time
+from typing import Any
 import logging
 
 # Import custom modules
@@ -18,6 +12,9 @@ from modules.step4_duplicate_remover import Step4DuplicateRemover
 from modules.exporter import FileExporter
 from utils.validators import FileValidator
 
+# Import TSS UI Kit
+from modules.tss_ui_kit import TSSUIKit, create_config, get_step_config
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
@@ -28,6 +25,20 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Initialize TSS UI Kit
+@st.cache_resource
+def initialize_ui_kit():
+    """Initialize and cache the TSS UI Kit instance"""
+    config = create_config({
+        "app_title": "CPC Internal TSS Converter",
+        "page_title": "CPC Internal TSS Converter",
+        "max_file_size_mb": 100,
+        "layout": "wide",
+        "initial_sidebar_state": "collapsed"
+    })
+    ui = TSSUIKit(config.export_config())
+    return ui, config
 
 def load_custom_css():
     """Load custom CSS styling for the app"""
@@ -70,10 +81,10 @@ def load_custom_css():
         }
         
         .app-title {
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             font-weight: 400;
             color: #333333;
-            margin-bottom: 0.125rem;
+            margin-bottom: 0.5rem;
             text-align: center;
             display: flex;
             align-items: center;
@@ -82,119 +93,63 @@ def load_custom_css():
         }
         
         .app-subtitle {
-            font-size: 0.8rem;
+            font-size: 1.1rem;
             color: #666666;
             font-weight: 400;
             text-align: center;
+            margin-bottom: 2rem;
         }
         
-        /* Upload section styles */
+        /* Upload section styles - New Design */
         .upload-section {
-            max-width: 800px;
-            margin: 0 auto 0.375rem auto;
+            max-width: 900px;
+            margin: 0 auto 2rem auto;
             background: transparent;
-            border-radius: 0;
-            overflow: visible;
-            box-shadow: none;
-            border: none;
-            position: relative;
         }
         
-        .upload-box-header {
+        .upload-header {
             background: #ffffff;
-            padding: 0.5rem 0.75rem;
+            padding: 0.75rem;
             text-align: center;
             border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            margin-bottom: 0.25rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #d1d5db;
         }
         
-        .upload-box-header h3 {
-            font-size: 1rem;
+        .upload-header h3 {
+            font-size: 1.2rem;
             font-weight: 500;
             color: #333333;
-            margin-bottom: 0.125rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.25rem;
+            margin-bottom: 0.5rem;
         }
         
-        .upload-box-header p {
-            font-size: 0.8rem;
+        .upload-header p {
+            font-size: 0.9rem;
             color: #666666;
             margin: 0;
         }
         
-        .upload-box-body {
-            background-color: transparent;
-            padding: 0;
-            text-align: left;
-        }
         
-        .drag-drop-area {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2rem;
-            border: none;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
+        /* Streamlit file uploader - centered below text */
         
-        .drag-drop-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .stFileUploader {
+            border: none !important;
+            background: transparent !important;
+            margin: 0 !important;
+            position: static !important;
+            width: auto !important;
+            max-width: none !important;
+            text-align: center !important;
         }
-        
-        .drag-drop-icon {
-            font-size: 2.5rem;
-            color: #6c757d;
-        }
-        
-        .drag-drop-text h4 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: #333333;
-        }
-        
-        .drag-drop-text p {
-            margin: 0;
-            font-size: 0.95rem;
-            color: #6c757d;
-        }
-        
-        .browse-button {
-            background: #ffffff;
-            border: 1px solid #ced4da;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: #495057;
-            cursor: pointer;
-            white-space: nowrap;
-            font-weight: 400;
-        }
-        
-        .browse-button:hover {
-            background: #f8f9fa;
-            border-color: #adb5bd;
-        }
-        
-        /* Style file uploader to match design */
         
         .stFileUploader > div {
-            border: 2px dashed #d1d5db !important;
-            background: #ffffff !important;
-            border-radius: 8px !important;
-            padding: 0.5rem 0.75rem !important;
+            border: none !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
             margin: 0 !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
             box-sizing: border-box !important;
-            width: 100% !important;
+            width: auto !important;
         }
         
         .stFileUploader label {
@@ -210,39 +165,92 @@ def load_custom_css():
         .stFileUploader > div > div > div {
             border: none !important;
             background: transparent !important;
-            text-align: left !important;
+            text-align: center !important;
             display: flex !important;
+            flex-direction: row !important;
             align-items: center !important;
-            justify-content: space-between !important;
+            justify-content: center !important;
+            gap: 0 !important;
             margin: 0 !important;
             width: 100% !important;
-            max-width: 100% !important;
+            max-width: none !important;
             overflow: visible !important;
             padding: 0 !important;
             box-sizing: border-box !important;
         }
         
-        /* Constrain all content within exact bounds */
-        .stFileUploader section {
+        /* Override Streamlit file uploader completely */
+        .stFileUploader {
             border: none !important;
             background: transparent !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
+            max-width: 900px !important;
+            margin: 0 auto !important;
         }
         
-        /* Force button to respect container bounds */
-        .stFileUploader button {
+        .stFileUploader > div {
+            border: 2px dashed #d1d5db !important;
+            border-top: none !important;
+            background-color: #f8f9fa !important;
+            border-radius: 0 0 8px 8px !important;
+            padding: 1.5rem 3rem !important;
             margin: 0 !important;
-            flex-shrink: 1 !important;
-            max-width: 120px !important;
-            width: auto !important;
-            min-width: 0 !important;
-            overflow: hidden !important;
+        }
+        
+        .stFileUploader > div > div {
+            background-color: #f8f9fa !important;
+        }
+        
+        .stFileUploader section {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            background-color: #f8f9fa !important;
+            border: none !important;
+            padding: 1rem 0.25rem 1rem 1rem !important;
+        }
+        
+        /* Style the drag drop area like the reference */
+        .stFileUploader section > div:first-child {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1rem !important;
+        }
+        
+        /* Remove the extra cloud icon */
+        .stFileUploader section::before {
+            display: none !important;
+        }
+        
+        /* Show only the button and position it to the right */
+        .stFileUploader button {
+            display: block !important;
+            margin: 0 0 0 auto !important;
+            margin-right: 0.25rem !important;
+            background: #ffffff !important;
+            border: 1px solid #ced4da !important;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 6px !important;
+            font-size: 0.9rem !important;
+            color: #495057 !important;
+            cursor: pointer !important;
             white-space: nowrap !important;
-            text-overflow: ellipsis !important;
+            font-weight: 400 !important;
+            position: relative !important;
+            right: 0 !important;
+        }
+        
+        .stFileUploader button:hover {
+            background: #f8f9fa !important;
+            border-color: #adb5bd !important;
+        }
+        
+        /* Additional hiding for Streamlit elements */
+        .stFileUploader [data-testid="stFileUploader"] > div {
+            display: none !important;
+        }
+        
+        .stFileUploader [data-testid="stFileUploader"] button {
+            display: block !important;
         }
         
         /* Force all file uploader content to stay within bounds */
@@ -258,40 +266,51 @@ def load_custom_css():
         }
         
         
-        /* Align upload area with header */
-        .upload-box-body {
-            background-color: #ffffff;
-            padding: 0 2rem 2rem 2rem;
-            text-align: left;
+        
+        /* Main upload area - New Design */
+        .main-upload-area {
+            background: #f8f9fa;
+            border: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1rem 2rem;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
         }
         
-        /* Ensure file uploader fits within container bounds */
-        .stFileUploader {
-            border: none !important;
-            background: transparent !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            overflow: hidden !important;
-        }
-        
-        /* Create wrapper for file uploader */
-        .file-uploader-wrapper {
-            width: 100%;
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             max-width: 100%;
-            overflow: hidden;
             position: relative;
+            gap: 1rem;
         }
         
-        /* Ensure file uploader matches header width exactly */
-        .stFileUploader {
-            border: none !important;
-            background: transparent !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            overflow: hidden !important;
+        .cloud-icon {
+            font-size: 2.5rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
         }
+        
+        .upload-text {
+            text-align: center;
+        }
+        
+        .upload-text h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #333333;
+        }
+        
+        .upload-text p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
         
         /* Hide file information section */
         .file-info {
@@ -308,27 +327,6 @@ def load_custom_css():
             display: none !important;
         }
         
-        /* Style the Start Conversion button */
-        .conversion-button {
-            text-align: center;
-            margin: 0.25rem 0;
-        }
-        
-        .stButton > button {
-            background-color: #007bff !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 6px !important;
-            padding: 0.5rem 1.5rem !important;
-            font-size: 0.9rem !important;
-            font-weight: 500 !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s !important;
-        }
-        
-        .stButton > button:hover {
-            background-color: #0056b3 !important;
-        }
         
         /* Hide all info boxes and processing sections */
         .stInfo, .stSuccess, .stWarning, .stError {
@@ -348,13 +346,17 @@ def load_custom_css():
             margin: 1rem 0;
         }
         
-        /* Custom file info display */
+        /* Custom file info display - match upload box width */
         .file-info {
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.08);
             padding: 1.5rem;
-            margin: 2rem 0;
+            margin: 2rem auto;
+            width: 70%;
+            max-width: 800px;
+            min-width: 350px;
+            box-sizing: border-box;
         }
         
         .file-info h4 {
@@ -395,62 +397,52 @@ def load_custom_css():
     """, unsafe_allow_html=True)
 
 
-def display_header():
-    """Display the application header"""
+def display_header(ui: TSSUIKit):
+    """Display the application header using TSS UI Kit"""
+    ui.render_app_header(
+        title="CPC Internal TSS Converter",
+        subtitle="Convert CPC Internal TSS to Standard Internal TSS",
+        icon="📊",
+        compact=True,
+        show_line=True
+    )
+
+def display_upload_section(ui: TSSUIKit):
+    """Display the file upload interface with TSS UI Kit styling"""
+    # Use TSS UI Kit header but keep original Streamlit file uploader for compatibility
     st.markdown("""
-        <div class="app-header">
-            <h1 class="app-title">📊 CPC Internal TSS Converter</h1>
-            <p class="app-subtitle">Convert CPC Internal TSS to Standard Internal TSS</p>
+        <div class="upload-area-compact">
+            <h4 class="upload-title">📁 Upload File</h4>
+            <p class="upload-subtitle">Select Excel file to process</p>
         </div>
     """, unsafe_allow_html=True)
-
-def display_upload_section():
-    """Display the file upload interface"""
-    st.markdown("""
-        <div class="upload-section">
-            <div class="upload-box-header">
-                <h3>📁 Upload Excel File</h3>
-                <p>Select .xlsx file to convert</p>
-            </div>
-            <div class="upload-box-body">
-                <div class="file-uploader-wrapper">
-    """, unsafe_allow_html=True)
     
-    # File uploader with custom styling
+    # Use original Streamlit file uploader for full compatibility
     uploaded_file = st.file_uploader(
-        "Choose Excel file",
+        "Select file",
         type=['xlsx', 'xls'],
-        help="Upload your Excel file (max 200MB)",
+        help="Upload your Excel file (max 100MB)",
         label_visibility="collapsed"
     )
     
-    st.markdown("""
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    if uploaded_file is not None:
+        # Show file info using TSS UI Kit styling
+        file_size_mb = len(uploaded_file.getvalue()) / (1024 * 1024)
+        ui.render_info_message(f"File uploaded: {uploaded_file.name} ({file_size_mb:.1f}MB)")
     
     return uploaded_file
 
-def display_file_info(file_info: Dict[str, Any]):
-    """Display information about the uploaded file"""
-    st.markdown(f"""
-        <div class="file-info">
-            <h4>📄 File Information</h4>
-            <p><strong>Filename:</strong> {file_info['filename']}</p>
-            <p><strong>File size:</strong> {file_info['size']}</p>
-            <p><strong>Number of sheets:</strong> {file_info['sheet_count']}</p>
-            <p><strong>Non-empty sheets:</strong> {file_info['non_empty_sheets']}</p>
-        </div>
-    """, unsafe_allow_html=True)
 
 def main():
     """Main application function"""
-    # Load custom CSS
-    load_custom_css()
+    # Initialize TSS UI Kit
+    ui, _ = initialize_ui_kit()
+    
+    # Apply TSS UI Kit styling
+    ui.inject_custom_css()
     
     # Display app header
-    display_header()
+    display_header(ui)
     
     # Initialize session state
     if 'processed_files' not in st.session_state:
@@ -463,13 +455,14 @@ def main():
         st.session_state.step4_files = []
     
     # Display upload section
-    uploaded_file = display_upload_section()
+    uploaded_file = display_upload_section(ui)
     
     if uploaded_file is not None:
-        # Show Start Conversion button
-        st.markdown('<div class="conversion-button">', unsafe_allow_html=True)
-        start_conversion = st.button("🔄 Start Conversion", key="start_conversion_btn", type="primary")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Use columns to center button - simplest working solution
+        col1, col2, col3 = st.columns([2, 1, 2])  
+        with col2:
+            start_conversion = st.button("🔄 Start Conversion", type="primary", 
+                                       key="start_conversion_btn", use_container_width=True)
         
         if start_conversion:
             try:
@@ -487,27 +480,28 @@ def main():
                     is_valid, validation_message = validator.validate_excel_file(uploaded_file)
                 
                 if not is_valid:
-                    st.error(f"❌ File validation failed: {validation_message}")
+                    ui.render_error_message(f"File validation failed: {validation_message}")
                     return
                 
                 # Process file
                 with st.spinner("Reading Excel file..."):
-                    file_info = file_handler.get_file_info(uploaded_file)
                     sheets_data = file_handler.read_excel_sheets(uploaded_file)
                 
                 # Show non-empty sheets
                 non_empty_sheets = [name for name, df in sheets_data.items() if not df.empty]
                 
                 if not non_empty_sheets:
-                    st.warning("⚠️ No non-empty sheets found in the uploaded file.")
+                    ui.render_warning_message("No non-empty sheets found in the uploaded file.")
                     return
                 
-                # Start processing
+                # Start processing with single progress tracker
                 with st.spinner("Processing files..."):
-                    # Initialize components
+                    # Create single progress bar
                     progress_bar = st.progress(0)
+                    status_text = st.empty()
                     
                     # Step 1: Create templates first
+                    status_text.info("⏳ Step 1: Creating template files...")
                     converter = TemplateConverter()
                     processed_files = []
                     for sheet_name in non_empty_sheets:
@@ -520,32 +514,55 @@ def main():
                                 'file_path': template_file
                             })
                     progress_bar.progress(0.25)
+                    status_text.success("✅ Step 1: Template creation completed")
                     
-                    # Process with complete pipeline
+                    # Step 2: Data Processing
+                    status_text.info("⏳ Step 2: Processing data...")
                     step2_results = step2_processor.process_multiple_sheets_to_step2(uploaded_file, processed_files)
                     progress_bar.progress(0.5)
+                    status_text.success("✅ Step 2: Data processing completed")
                     
                     if step2_results['step2_files']:
+                        # Step 3: Data Transfer
+                        status_text.info("⏳ Step 3: Transferring data...")
                         step3_results = step3_processor.process_multiple_sheets_to_step3(uploaded_file, step2_results['step2_files'])
                         progress_bar.progress(0.75)
+                        status_text.success("✅ Step 3: Data transfer completed")
                         
                         if step3_results['step3_files']:
+                            # Step 4: Duplicate Removal
+                            status_text.info("⏳ Step 4: Removing duplicates...")
                             step4_results = step4_processor.process_multiple_sheets_to_step4(step3_results['step3_files'])
                             progress_bar.progress(1.0)
+                            status_text.success("✅ Step 4: Duplicate removal completed")
                             
                             if step4_results['step4_files']:
-                                # Create download
+                                # Create download using TSS UI Kit
                                 zip_buffer = exporter.create_zip_download(step4_results['step4_files'])
                                 
-                                st.success("✅ Conversion completed successfully!")
-                                st.download_button(
-                                    label="📦 Download Converted Files",
-                                    data=zip_buffer,
-                                    file_name=f"{Path(uploaded_file.name).stem}_TSS_Converted.zip",
-                                    mime="application/zip"
+                                # Save to temporary file for TSS UI Kit download
+                                import tempfile
+                                with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_file:
+                                    tmp_file.write(zip_buffer)
+                                    temp_file_path = tmp_file.name
+                                
+                                ui.render_success_message("Conversion completed successfully!")
+                                
+                                # Use TSS UI Kit download section
+                                processing_stats = {
+                                    "initial_sheets": len(non_empty_sheets),
+                                    "processed_files": len(step4_results['step4_files']),
+                                    "processing_steps": 4
+                                }
+                                
+                                ui.render_download_section(
+                                    file_path=temp_file_path,
+                                    original_filename=uploaded_file.name,
+                                    processing_stats=processing_stats,
+                                    custom_filename=f"{Path(uploaded_file.name).stem}_TSS_Converted.zip"
                                 )
             except Exception as process_error:
-                st.error(f"❌ Error during processing: {str(process_error)}")
+                ui.render_error_message(f"Error during processing: {str(process_error)}")
                 logging.error(f"Processing error: {str(process_error)}")
     
 
