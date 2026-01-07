@@ -556,16 +556,9 @@ def main():
                                 ui.render_success_message("Conversion completed successfully!")
                                 
                                 # Use TSS UI Kit download section
-                                processing_stats = {
-                                    "initial_sheets": len(non_empty_sheets),
-                                    "processed_files": len(step4_results['step4_files']),
-                                    "processing_steps": 4
-                                }
-                                
                                 ui.render_download_section(
                                     file_path=temp_file_path,
                                     original_filename=uploaded_file.name,
-                                    processing_stats=processing_stats,
                                     custom_filename=f"{Path(uploaded_file.name).stem}_TSS_Converted.zip"
                                 )
             except Exception as process_error:
