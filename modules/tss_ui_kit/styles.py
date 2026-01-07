@@ -820,8 +820,7 @@ def get_custom_css() -> str:
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        margin: 1rem auto !important;
-        text-align: center !important;
+        width: 100% !important;
     }
     
     .stDownloadButton > div {
@@ -829,7 +828,6 @@ def get_custom_css() -> str:
         justify-content: center !important;
         align-items: center !important;
         width: 100% !important;
-        margin: 0 auto !important;
     }
     
     /* Force blue background and white text for download buttons */
@@ -838,13 +836,12 @@ def get_custom_css() -> str:
         color: #ffffff !important;
         border: 1px solid #2563eb !important;
         border-radius: 6px !important;
-        padding: 0.5rem 1rem !important;
-        font-size: 0.875rem !important;
-        font-weight: 500 !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
         margin: 0 auto !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: block !important;
+        width: 100% !important;
         text-align: center !important;
         gap: 0.5rem !important;
         transition: all 0.15s ease !important;
@@ -863,13 +860,15 @@ def get_custom_css() -> str:
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
     }
     
-    /* Ensure all download button content has white text */
+    /* Ensure all download button content has white text and is centered */
     .stDownloadButton button *,
     .stDownloadButton button span,
     .stDownloadButton button p {
         color: #ffffff !important;
         text-align: center !important;
         justify-content: center !important;
+        display: flex !important;
+        align-items: center !important;
     }
     
     /* Center download button within download section */

@@ -314,24 +314,18 @@ class TSSUIKit:
                 elif str(file_path).lower().endswith('.csv'):
                     mime_type = "text/csv"
                 
-                # Create centered download button using Streamlit native functionality
-                st.markdown("""
-                    <div style="display: flex; justify-content: center; align-items: center; margin: 1rem 0;">
-                """, unsafe_allow_html=True)
-                
-                st.download_button(
-                    label="📥 Download Processed File",
-                    data=file_data,
-                    file_name=download_filename,
-                    mime=mime_type,
-                    key=f"download_{download_filename}",
-                    use_container_width=False,
-                    type="primary"
-                )
-                
-                st.markdown("""
-                    </div>
-                """, unsafe_allow_html=True)
+                # Create centered download button using Streamlit columns
+                col1, col2, col3 = st.columns([2, 1, 2])
+                with col2:
+                    st.download_button(
+                        label="📥 Download Processed File",
+                        data=file_data,
+                        file_name=download_filename,
+                        mime=mime_type,
+                        key=f"download_{download_filename}",
+                        use_container_width=True,
+                        type="primary"
+                    )
                 
                     
             except Exception as e:
