@@ -6,7 +6,7 @@ Wrapper around core pipeline for Step 4 duplicate removal.
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
-from .core_pipeline import CoreStep4DuplicateRemover
+from .core import CoreStep4DuplicateRemover
 
 class Step4DuplicateRemover:
     """

@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
 from streamlit.runtime.uploaded_file_manager import UploadedFile
-from .core_pipeline import CoreStep3DataTransfer
+from .core import CoreStep3DataTransfer
 
 class Step3DataTransfer:
     """

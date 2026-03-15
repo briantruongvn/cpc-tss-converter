@@ -75,25 +75,6 @@ class FileExporter:
             logging.error(f"Error preparing file download: {str(e)}")
             raise Exception(f"Failed to prepare file for download: {str(e)}")
     
-    def get_download_filename(self, original_filename: str, sheet_name: str) -> str:
-        """
-        Generate download filename based on naming convention
-        
-        Args:
-            original_filename: Original uploaded file name
-            sheet_name: Name of the sheet
-            
-        Returns:
-            Formatted filename for download
-        """
-        # Remove extension from original filename
-        base_name = Path(original_filename).stem
-        
-        # Create filename following the pattern: [Input filename] - [SheetName] - Step1.xlsx
-        download_filename = f"{base_name} - {sheet_name} - Step1.xlsx"
-        
-        return download_filename
-    
     def get_zip_filename(self, original_filename: str) -> str:
         """
         Generate ZIP filename for bulk download

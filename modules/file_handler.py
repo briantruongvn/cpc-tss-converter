@@ -182,29 +182,6 @@ class ExcelFileHandler:
         except Exception as e:
             raise Exception(f"Error analyzing sheet structure: {str(e)}")
     
-    def get_non_empty_sheets(self, uploaded_file: UploadedFile) -> List[str]:
-        """
-        Get list of non-empty sheet names
-        
-        Args:
-            uploaded_file: Streamlit uploaded file object
-            
-        Returns:
-            List of non-empty sheet names
-        """
-        try:
-            sheets_data = self.read_excel_sheets(uploaded_file)
-            non_empty_sheets = []
-            
-            for sheet_name, df in sheets_data.items():
-                if not df.empty and not df.isnull().all().all():
-                    non_empty_sheets.append(sheet_name)
-            
-            return non_empty_sheets
-            
-        except Exception as e:
-            raise Exception(f"Error identifying non-empty sheets: {str(e)}")
-    
     def validate_excel_format(self, uploaded_file: UploadedFile) -> Tuple[bool, str]:
         """
         Validate that the uploaded file is a valid Excel format

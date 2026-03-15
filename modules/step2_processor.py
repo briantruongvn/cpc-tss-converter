@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
 from streamlit.runtime.uploaded_file_manager import UploadedFile
-from .core_pipeline import CoreStep2Processor
+from .core import CoreStep2Processor
 
 class Step2Processor:
     """

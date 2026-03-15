@@ -210,35 +210,6 @@ class FileValidator:
         except Exception as e:
             return False, f"Error during content validation: {str(e)}"
     
-    def validate_sheet_name(self, sheet_name: str) -> Tuple[bool, str]:
-        """
-        Validate sheet name for output filename compatibility
-        
-        Args:
-            sheet_name: Name of the sheet to validate
-            
-        Returns:
-            Tuple of (is_valid, message)
-        """
-        try:
-            if not sheet_name or sheet_name.strip() == "":
-                return False, "Sheet name is empty"
-            
-            # Check for invalid filename characters
-            invalid_chars = ['/', '\\', '?', '*', ':', '|', '"', '<', '>']
-            for char in invalid_chars:
-                if char in sheet_name:
-                    return False, f"Sheet name contains invalid character: '{char}'"
-            
-            # Check length
-            if len(sheet_name) > 100:
-                return False, f"Sheet name too long ({len(sheet_name)} chars). Maximum: 100"
-            
-            return True, "Sheet name is valid"
-            
-        except Exception as e:
-            return False, f"Error validating sheet name: {str(e)}"
-    
     def get_validation_summary(self, uploaded_file: UploadedFile) -> Dict[str, Any]:
         """
         Get comprehensive validation summary

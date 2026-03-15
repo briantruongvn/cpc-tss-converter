@@ -1,11 +1,12 @@
 import streamlit as st
+import tempfile
 from pathlib import Path
 from typing import Any
 import logging
 
 # Import custom modules
 from modules.file_handler import ExcelFileHandler
-from modules.converter import TemplateConverter
+from modules.step1_processor import TemplateConverter
 from modules.step2_processor import Step2Processor
 from modules.step3_data_transfer import Step3DataTransfer
 from modules.step4_duplicate_remover import Step4DuplicateRemover
@@ -548,7 +549,6 @@ def main():
                                 zip_buffer = exporter.create_zip_download(step4_results['step4_files'])
                                 
                                 # Save to temporary file for TSS UI Kit download
-                                import tempfile
                                 with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_file:
                                     tmp_file.write(zip_buffer)
                                     temp_file_path = tmp_file.name

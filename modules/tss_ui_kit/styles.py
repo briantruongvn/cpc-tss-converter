@@ -295,7 +295,7 @@ def get_custom_css() -> str:
         line-height: 1.6;
     }
     
-    /* Perfect button centering container using CSS Grid with debug border */
+    /* Perfect button centering container using CSS Grid */
     .button-center-container {
         width: 70% !important;
         max-width: 800px !important;
@@ -304,8 +304,6 @@ def get_custom_css() -> str:
         display: grid !important;
         place-items: center !important;
         box-sizing: border-box !important;
-        box-shadow: 0 0 0 2px red !important; /* DEBUG: Red outline for button container */
-        min-height: 60px !important; /* DEBUG: Ensure container has height */
     }
     
     .button-center-container .stButton {
